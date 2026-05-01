@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- ✨ 補上這三行，讓它變成全螢幕的 Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="上架神器">
+    <title>Belita | 手機快速上架</title>
+    <style>
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { background: #f4f6f8; padding: 15px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; }
+        h1 { font-size: 20px; color: #8b7355; text-align: center; margin-bottom: 20px;}
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #555;}
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background: #fafafa;}
+        .btn-submit { width: 100%; padding: 16px; background: #8b7355; color: #fff; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-submit:disabled { background: #ccc;}
+        .status { text-align: center; font-size: 13px; color: #888; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="admin-panel" style="display: none;">
+        <h1>📸 現場連線快速上架</h1>
+        <form id="upload-form">
+            <div class="form-group"><label>1. 拍攝照片</label><input type="file" id="imageFile" accept="image/*" required></div>
+            <div class="form-group"><label>2. 商品名稱</label><input type="text" id="productName" required></div>
+            <div class="form-group"><label>3. 價格 (NTD)</label><input type="number" id="price" inputmode="numeric" required></div>
+            <div class="form-group"><label>4. 分類</label>
+                <select id="category"><option>伴手禮</option><option>零食</option><option>保養品</option><option>生活雜貨</option></select>
+            </div>
+            <button type="submit" class="btn-submit" id="submit-btn">上傳並上架</button>
+            <div id="status-msg" class="status">圖片與資料處理中...</div>
+        </form>
+    </div>
+    <script>
+        const adminCode = prompt("請輸入老闆專用密碼：");
+        if (adminCode !== "1234") { // ⚠️ 記得改掉這個預設密碼
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px; color: red;'>⛔ 權限不足</h1>";
+        } else {
+            document.getElementById('admin-panel').style.display = 'block';
+            const scriptURL = 'YOUR_GAS_URL_HERE'; // ⚠️ 請貼上您的 GAS 網址
+            const IMGBB_API_KEY = '4bd3a0f7ef60563653ce5f04d1d67588'; 
+
+            document.getElementById('upload-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submit-btn');
+                const msg = document.getElementById('status-msg');
+                btn.disabled = true; msg.style.display = 'block';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', document.getElementById('imageFile').files[0]);
+                    const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                    const imgData = await imgRes.json();
+
+                    await fetch(scriptURL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({
+                            action: 'add_product',
+                            productName: document.getElementById('productName').value,
+                            category: document.getElementById('category').value,
+                            price: document.getElementById('price').value,
+                            imgUrl: imgData.data.url
+                        }) 
+                    });
+                    alert('✅ 上架成功！'); location.reload();
+                } catch (error) { alert('出錯了'); btn.disabled = false; msg.style.display = 'none';}
+            });
+        }
+    </script>
+</body>
+</html>
