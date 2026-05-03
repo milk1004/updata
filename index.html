@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沖繩代購與美食打卡清單</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --hunter-color: #27ae60;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 20px 10px; 
+            color: var(--text-color); 
+        }
+        h1 { text-align: center; color: var(--primary-color); font-size: 1.5rem; margin-bottom: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .category-card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+        .category-title { 
+            color: var(--primary-color); 
+            border-bottom: 2px solid #f0f0f0; 
+            padding-bottom: 8px; 
+            margin-top: 0; 
+            font-size: 1.1rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .location-item { 
+            display: flex; align-items: center;
+            margin: 12px 0; padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
+        .location-item:last-child { border-bottom: none; }
+        .checkbox-container { margin-right: 10px; display: flex; align-items: center; }
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-color); }
+        .content-container { flex: 1; cursor: pointer; }
+        .location-name { font-weight: bold; font-size: 1rem; color: var(--primary-color); }
+        .tag { background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: #7f8c8d; margin-left: 5px; }
+        
+        .btn-group { display: flex; gap: 5px; align-items: center; }
+        .nav-link { 
+            background-color: #4285F4; color: white; text-decoration: none; 
+            padding: 5px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;
+        }
+        .delete-btn { background: none; border: none; color: #e74c3c; font-size: 1.2rem; cursor: pointer; }
+        
+        .custom-input-group { display: flex; gap: 8px; margin-top: 10px; }
+        .custom-input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+        .add-btn { background-color: var(--hunter-color); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+
+        .checked .location-name { color: #bdc3c7; text-decoration: line-through; }
+        
+        /* 地圖區域 */
+        .map-container {
+            width: 100%;
+            height: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--card-bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-top: 10px;
+        }
+        iframe { width: 100%; height: 100%; border: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 沖繩任務打卡清單</h1>
+
+        <!-- 獵人一番賞包套作戰區 -->
+        <div class="category-card" style="border: 2px solid var(--hunter-color);">
+            <h2 class="category-title" style="color: var(--hunter-color);">🎯 獵人包套作戰 (7-11)</h2>
+            <div class="custom-input-group">
+                <input type="text" id="newStoreInput" class="custom-input" placeholder="貼上 7-11 店名">
+                <button class="add-btn" onclick="addCustomStore()">加入</button>
+            </div>
+            <div id="customStoreList" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- 預設行程 -->
+        <div class="category-card">
+            <h2 class="category-title">🛍️ 代購與美食清單</h2>
+            <div id="staticList"></div>
+        </div>
+
+        <!-- 地圖預覽區 -->
+        <div class="category-card">
+            <h2 class="category-title">🗺️ 實戰地圖預覽</h2>
+            <div class="map-container">
+                <!-- 預設顯示那霸市中心區域 -->
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28637.37367851978!2d127.669864!3d26.212312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34e5697141a6b58b%3A0x2761d9d5d4657c0!2z6YKj6KaH5biC!5e0!3m2!1szh-TW!2sjp!4v1715000000000!5m2!1szh-TW!2sjp" 
+                    allowfullscreen="" loading="lazy">
+                </iframe>
+            </div>
+            <p style="font-size: 0.75rem; color: #888; margin-top: 8px; text-align: center;">※ 地圖僅供參考區域，精準導航請點擊各項目的「導航」按鈕。</p>
+        </div>
+    </div>
+
+    <script>
+        const staticLocations = [
+            { id: 'jacks', name: '傑克牛排 (Jack\'s Steak House)', tag: '美食' },
+            { id: 'donki_k', name: '唐吉訶德 那霸國際通店', tag: '掃貨' },
+            { id: 'calbee', name: 'Calbee+ 國際通店', tag: '伴手禮' },
+            { id: 'pokemon', name: '寶可夢中心 (AEON Rycom)', tag: '必逛' },
+            { id: 'jojoen', name: '敘敘苑 PARCO CITY店', tag: '美食' },
+            { id: 'american', name: '美國村 (週六煙火)', tag: '景點' }
+        ];
+
+        let customStores = JSON.parse(localStorage.getItem('customStores')) || [];
+
+        function renderAll() {
+            const staticContainer = document.getElementById('staticList');
+            staticContainer.innerHTML = staticLocations.map(loc => createItemHtml(loc.id, loc.name, loc.tag, false)).join('');
+
+            const customContainer = document.getElementById('customStoreList');
+            customContainer.innerHTML = customStores.map((name, index) => createItemHtml('custom_'+index, name, '獵人包套', true, index)).join('');
+        }
+
+        function createItemHtml(id, name, tag, isCustom, index) {
+            const isChecked = localStorage.getItem(id) === 'true';
+            const checkedClass = isChecked ? 'checked' : '';
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' 沖繩')}`;
+            
+            return `
+                <div class="location-item ${checkedClass}">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="cb_${id}" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${id}')">
+                    </div>
+                    <div class="content-container" onclick="toggleCheck('${id}')">
+                        <div class="location-name">${name}<span class="tag">${tag}</span></div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="${mapUrl}" target="_blank" class="nav-link">導航</a>
+                        ${isCustom ? `<button class="delete-btn" onclick="deleteStore(${index})">×</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        window.toggleCheck = function(id) {
+            const cb = document.getElementById('cb_' + id);
+            // 判斷是從 Checkbox 觸發還是從文字點擊觸發
+            if (event.target.type !== 'checkbox') cb.checked = !cb.checked;
+            localStorage.setItem(id, cb.checked);
+            renderAll();
+        };
+
+        window.addCustomStore = function() {
+            const input = document.getElementById('newStoreInput');
+            const val = input.value.trim();
+            if (val) {
+                customStores.push(val);
+                localStorage.setItem('customStores', JSON.stringify(customStores));
+                input.value = '';
+                renderAll();
+            }
+        };
+
+        window.deleteStore = function(index) {
+            localStorage.removeItem('custom_' + index);
+            customStores.splice(index, 1);
+            localStorage.setItem('customStores', JSON.stringify(customStores));
+            renderAll();
+        };
+
+        document.addEventListener('DOMContentLoaded', renderAll);
+    </script>
+</body>
+</html>
