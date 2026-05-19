@@ -3,106 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- PWA 與桌面捷徑優化 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="沖繩代購">
     <link id="manifest-link" rel="manifest" href="">
-    <title>沖繩實戰打卡清單</title>
+    <title>沖繩實戰打卡清單 (雲端同步終極版)</title>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --text-color: #333;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --hunter-color: #27ae60;
-            --route-color: #f39c12;
-            --memo-color: #d35400;
-            --border-color: #eee;
-            --input-bg: #fff;
+            --primary-color: #2c3e50; --accent-color: #3498db; --text-color: #333;
+            --bg-color: #f4f7f6; --card-bg: #ffffff; --hunter-color: #27ae60;
+            --route-color: #f39c12; --memo-color: #d35400; --border-color: #eee; --input-bg: #fff;
         }
-
-        /* 🌙 深色模式變數 */
         body.dark-mode {
-            --primary-color: #90caf9;
-            --accent-color: #64b5f6;
-            --text-color: #e0e0e0;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --hunter-color: #81c784;
-            --memo-color: #ffb74d;
-            --border-color: #444;
-            --input-bg: #333;
+            --primary-color: #90caf9; --accent-color: #64b5f6; --text-color: #e0e0e0;
+            --bg-color: #121212; --card-bg: #1e1e1e; --hunter-color: #81c784;
+            --memo-color: #ffb74d; --border-color: #444; --input-bg: #333;
         }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-            background-color: var(--bg-color); 
-            margin: 0; 
-            padding: 20px 10px 80px 10px; 
-            color: var(--text-color); 
-            -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.3s, color 0.3s;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px 10px 80px 10px; color: var(--text-color); transition: 0.3s; }
         
-        /* 頂部工具列 */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto 20px auto; }
+        /* 頂部與同步狀態列 */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto 10px auto; }
         .top-bar h1 { margin: 0; color: var(--primary-color); font-size: 1.4rem; }
         .top-actions { display: flex; gap: 10px; }
-        .icon-btn { 
-            background: var(--card-bg); border: 1px solid var(--border-color); 
-            border-radius: 50%; width: 36px; height: 36px; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            color: var(--text-color); transition: 0.3s;
-        }
+        .icon-btn { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; color: var(--text-color); transition: 0.2s;}
+        
+        #sync-status { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 15px; font-weight: bold; }
+        .status-syncing { color: var(--route-color) !important; }
+        .status-ok { color: var(--hunter-color) !important; }
 
         .container { max-width: 600px; margin: 0 auto; }
-        .category-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            transition: background-color 0.3s;
-        }
-        
-        .category-title { 
-            color: var(--primary-color); 
-            border-bottom: 2px solid var(--border-color); 
-            padding-bottom: 8px; 
-            margin-top: 0; 
-            font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            cursor: pointer; 
-            user-select: none; 
-        }
+        .category-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .category-title { color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
         .toggle-icon { font-size: 0.8rem; opacity: 0.6; }
         .category-content.hidden { display: none; }
 
-        /* 拖曳與項目樣式 */
-        .location-item { 
-            display: flex; align-items: center; justify-content: space-between;
-            margin: 12px 0; padding-bottom: 12px;
-            border-bottom: 1px dashed var(--border-color);
-            transition: opacity 0.2s, background-color 0.2s;
-        }
+        /* 項目樣式 */
+        .location-item { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color); }
         .location-item.dragging { opacity: 0.4; background-color: rgba(0,0,0,0.05); }
         .location-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
-        
-        .drag-handle { 
-            cursor: grab; padding-right: 12px; font-size: 1.2rem; color: #aaa;
-            user-select: none; touch-action: none; 
-        }
-        
+        .drag-handle { cursor: grab; padding-right: 12px; font-size: 1.2rem; color: #aaa; user-select: none; touch-action: none; }
         .left-content { display: flex; align-items: center; flex: 1; }
         .checkbox-container { margin-right: 10px; display: flex; align-items: center; }
         input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-color); }
         .content-container { flex: 1; cursor: pointer; }
         .location-name { font-weight: bold; font-size: 0.95rem; color: var(--primary-color); line-height: 1.4;}
         .tag { background: var(--border-color); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-color); margin-left: 5px; white-space: nowrap; }
-        
         .location-desc { font-size: 0.8rem; color: var(--memo-color); margin-top: 4px; font-weight: 500; }
         .location-desc.empty { color: #888; font-weight: normal; }
         
@@ -115,44 +60,41 @@
         .custom-input-group { display: flex; gap: 8px; margin-top: 10px; }
         .custom-input { flex: 1; padding: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 6px; font-size: 0.95rem; }
         .add-btn { color: white; border: none; padding: 10px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; white-space: nowrap;}
-        
         .btn-hunter { background-color: var(--hunter-color); }
         .btn-shopping { background-color: var(--accent-color); }
 
-        .route-btn {
-            display: block; width: 100%; background-color: var(--route-color); color: white;
-            border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1rem;
-            cursor: pointer; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.3);
-        }
+        .route-btn { display: block; width: 100%; background-color: var(--route-color); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.3); }
 
         .checked .location-name { color: #888; text-decoration: line-through; }
         .checked .location-desc { color: #888; }
         
-        .map-container {
-            width: 100%; height: 300px; border-radius: 12px; overflow: hidden;
-            border: 2px solid var(--card-bg); box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-top: 10px;
-        }
+        .map-container { width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--card-bg); margin-top: 10px; }
         iframe { width: 100%; height: 100%; border: 0; }
+        
+        /* 遮罩層 */
+        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); z-index: 1000; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; color: var(--primary-color); }
+        body.dark-mode #loading-overlay { background: rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
+    <div id="loading-overlay">🔄 正在連線雲端資料庫...</div>
     <div class="container">
-        <!-- 頂部標題與控制列 -->
         <div class="top-bar">
             <h1>📍 沖繩實戰打卡清單</h1>
             <div class="top-actions">
+                <!-- 匯出地圖按鈕 -->
+                <button class="icon-btn" onclick="exportToCSV()" title="匯出為 Google 地圖檔">📍</button>
                 <button class="icon-btn" onclick="toggleDarkMode()" id="themeBtn" title="切換深淺色">🌙</button>
             </div>
         </div>
+        
+        <div id="sync-status">🟢 雲端同步完成</div>
 
-        <!-- 路線規劃按鈕 -->
         <button class="route-btn" onclick="generateRoute()">🚗 導航：串聯「未打勾」地點</button>
 
-        <!-- 獵人包套作戰區 -->
         <div class="category-card" style="border: 2px solid var(--hunter-color);">
             <h2 class="category-title" style="color: var(--hunter-color);" onclick="toggleCategory('hunter')">
-                <span>🎯 獵人包套作戰 (7-11)</span>
-                <span class="toggle-icon" id="icon_hunter">▼</span>
+                <span>🎯 獵人包套作戰 (7-11)</span><span class="toggle-icon" id="icon_hunter">▼</span>
             </h2>
             <div class="category-content" id="content_hunter">
                 <div class="custom-input-group">
@@ -163,11 +105,9 @@
             </div>
         </div>
 
-        <!-- 購物與美食自訂清單 -->
         <div class="category-card" style="border: 2px solid var(--accent-color);">
             <h2 class="category-title" style="color: var(--accent-color);" onclick="toggleCategory('shopping')">
-                <span>🛍️ 代購與美食清單</span>
-                <span class="toggle-icon" id="icon_shopping">▼</span>
+                <span>🛍️ 代購與美食清單</span><span class="toggle-icon" id="icon_shopping">▼</span>
             </h2>
             <div class="category-content" id="content_shopping">
                 <div class="custom-input-group">
@@ -178,11 +118,9 @@
             </div>
         </div>
 
-        <!-- 地圖預覽區 -->
         <div class="category-card" id="mapSection">
             <h2 class="category-title" onclick="toggleCategory('map')">
-                <span>🗺️ 實戰地圖預覽</span>
-                <span class="toggle-icon" id="icon_map">▼</span>
+                <span>🗺️ 實戰地圖預覽</span><span class="toggle-icon" id="icon_map">▼</span>
             </h2>
             <div class="category-content" id="content_map">
                 <div class="map-container">
@@ -193,63 +131,121 @@
     </div>
 
     <script>
-        // ---------------- 1. 系統初始化 ----------------
+        // 🌟⚠️ 必改重點：請把這串網址換成你的 Google Apps Script 網址！
+        const API_URL = "https://script.google.com/macros/s/AKfycbxvSDQQIIZZnVropocs1oHOa5jdBPzIe4bfgW9HcpYJu0pZYBkeXUgz9ZU-rB7a25zm/exec"; 
         
-        // PWA 支援：動態生成 manifest 讓 iOS/Android 可安裝為完美 App
-        const manifestData = {
-            name: "沖繩實戰打卡",
-            short_name: "沖繩代購",
-            display: "standalone",
-            background_color: "#f4f7f6",
-            theme_color: "#2c3e50",
-            icons: [{
-                src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E📍%3C/text%3E%3C/svg%3E",
-                sizes: "192x192",
-                type: "image/svg+xml"
-            }]
-        };
-        const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
-        document.getElementById('manifest-link').href = URL.createObjectURL(blob);
+        // ---------------- 1. 預設名單設定 (111間獵人店 + 19間購物點) ----------------
+        const defaultHunterStores = [
+            /* --- 那霸市 (58間) --- */
+            { "name": "一番くじ公式ショップ 那覇メインプレイス店", "memo": "" }, { "name": "セブン‐イレブン 那覇楚辺１丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇与儀東店", "memo": "" }, { "name": "セブン‐イレブン 壺川駅前店", "memo": "" }, { "name": "セブン‐イレブン 那覇寄宮２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇仲井真店", "memo": "" }, { "name": "セブン‐イレブン 那覇一日橋店", "memo": "" }, { "name": "セブン‐イレブン 那覇古波蔵２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇壺川１丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇壺屋２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇開南店", "memo": "" }, { "name": "セブン‐イレブン 那覇上間店", "memo": "" }, { "name": "セブン‐イレブン 沖縄ハーバービューホテル店", "memo": "" }, { "name": "セブン‐イレブン 那覇楚辺店", "memo": "" }, { "name": "セブン‐イレブン 那覇宇栄原店", "memo": "" }, { "name": "セブン‐イレブン 沖縄産業支援センター店", "memo": "" }, { "name": "セブン‐イレブン 那覇小禄駅前店", "memo": "" }, { "name": "セブン‐イレブン 那覇小禄１丁目店", "memo": "" }, { "name": "セブン‐イレブン 奥武山公園前店", "memo": "" }, { "name": "セブン‐イレブン 那覇金城２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇旭町金秀ビル前店", "memo": "" }, { "name": "セブン‐イレブン 国際通ＯＴＳビル店", "memo": "" }, { "name": "セブン‐イレブン 那覇久茂地３丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇松山２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇牧志店", "memo": "" }, { "name": "セブン‐イレブン 那覇銘苅３丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇松山１丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇崇元寺通り店", "memo": "" }, { "name": "セブン‐イレブン ロワジールホテル那覇店", "memo": "" }, { "name": "セブン‐イレブン 国際通牧志２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇リッチモンドホテル店", "memo": "" }, { "name": "セブン‐イレブン 那覇久美橋店", "memo": "" }, { "name": "セブン‐イレブン 那覇サンシャイン通り店", "memo": "" }, { "name": "セブン‐イレブン 那覇上之屋１丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇泊２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇曙２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇新都心公園前店", "memo": "" }, { "name": "セブン‐イレブン 那覇曙３丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇若狭１丁目店", "memo": "" }, { "name": "セブン‐イレブン 琉球新報天久ビル店", "memo": "" }, { "name": "セブン‐イレブン 那覇新都心銘苅店", "memo": "" }, { "name": "セブン‐イレブン 那覇高校前店", "memo": "" }, { "name": "セブン‐イレブン 那覇前島２丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇沖映通り店", "memo": "" }, { "name": "セブン‐イレブン 那覇安岡店", "memo": "" }, { "name": "セブン‐イレブン 那覇新都心天久店", "memo": "" }, { "name": "セブン‐イレブン 那覇天久１丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇前島店", "memo": "" }, { "name": "セブン‐イレブン 首里城下町ＪＡおきなわ店", "memo": "" }, { "name": "セブン‐イレブン 那覇真嘉比３丁目店", "memo": "" }, { "name": "セブン‐イレブン 那覇真嘉比２丁目店", "memo": "" }, { "name": "セブン‐イレブン ダブルツリーｂｙヒルトン那覇首里城店", "memo": "" }, { "name": "セブン‐イレブン 那覇首里大名町３丁目店", "memo": "" }, { "name": "セブン‐イレブン 首里石嶺２丁目店", "memo": "" }, { "name": "セブン‐イレブン 国際通安里１丁目店", "memo": "" }, { "name": "セブン‐イレブン ＤＲ沖縄県庁前ロイネット店", "memo": "" }, { "name": "セブン‐イレブン ＤＲ那覇おもろまちプレミア店", "memo": "" }, { "name": "セブン‐イレブン 国際通松尾１丁目店", "memo": "" },
+            /* --- 宜野灣市 (9間) --- */
+            { "name": "セブン‐イレブン 宜野湾真栄原３丁目店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾真栄原２丁目店", "memo": "" }, { "name": "セブン‐イレブン 琉球大学北口店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾我如古４丁目店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾２丁目店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾神山１丁目店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾長田１丁目店", "memo": "" }, { "name": "セブン‐イレブン 沖縄国際大学店", "memo": "" }, { "name": "セブン‐イレブン 宜野湾真志喜店", "memo": "" },
+            /* --- 浦添市 (20間) --- */
+            { "name": "セブン‐イレブン 浦添城間かねひで店", "memo": "" }, { "name": "セブン‐イレブン 浦添前田店", "memo": "" }, { "name": "セブン‐イレブン 浦添牧港１丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添港川１丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添城間４丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添内間２丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添牧港５丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添沢岻店", "memo": "" }, { "name": "セブン‐イレブン 浦添宮城２丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添経塚店", "memo": "" }, { "name": "セブン‐イレブン 浦添市役所前店", "memo": "" }, { "name": "セブン‐イレブン 浦添内間１丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添宮城５丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添牧港４丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添当山２丁目店", "memo": "" }, { "name": "セブン‐イレブン 国立劇場おきなわ前店", "memo": "" }, { "name": "セブン‐イレブン 浦添屋富祖３丁目店", "memo": "" }, { "name": "セブン‐イレブン 浦添パイプライン伊祖店", "memo": "" }, { "name": "セブン‐イレブン 浦添グリーンハイツ経塚店", "memo": "" }, { "name": "セブン‐イレブン 浦添内間５丁目店", "memo": "" },
+            /* --- 糸満市 (4間) --- */
+            { "name": "セブン‐イレブン 糸満兼城サンプラザ糸満店", "memo": "" }, { "name": "セブン‐イレブン 糸満真栄里東店", "memo": "" }, { "name": "セブン‐イレブン 糸満座波店", "memo": "" }, { "name": "セブン‐イレブン 糸満照屋店", "memo": "" },
+            /* --- 豐見城市 (11間) --- */
+            { "name": "セブン‐イレブン 豊見城伊良波店", "memo": "" }, { "name": "セブン‐イレブン 豊見城警察署前店", "memo": "" }, { "name": "セブン‐イレブン 豊見城名嘉地北店", "memo": "" }, { "name": "セブン‐イレブン 豊見城インター南店", "memo": "" }, { "name": "セブン‐イレブン 豊見城翁長北店", "memo": "" }, { "name": "セブン‐イレブン 豊見城公園前店", "memo": "" }, { "name": "セブン‐イレブン 豊見城金良店", "memo": "" }, { "name": "セブン‐イレブン 豊見城中央店", "memo": "" }, { "name": "セブン‐イレブン 豊見城渡橋名店", "memo": "" }, { "name": "セブン‐イレブン 豊見城我那覇店", "memo": "" }, { "name": "セブン‐イレブン 豊見城宜保２丁目店", "memo": "" },
+            /* --- うるま市 (15間) --- */
+            { "name": "セブン‐イレブン 石川インター店", "memo": "" }, { "name": "セブン‐イレブン 石川曙２丁目店", "memo": "" }, { "name": "セブン‐イレブン うるま天願店", "memo": "" }, { "name": "セブン‐イレブン うるま西原店", "memo": "" }, { "name": "セブン‐イレブン うるまみどり町４丁目店", "memo": "" }, { "name": "セブン‐イレブン うるま赤道店", "memo": "" }, { "name": "セブン‐イレブン うるま上江洲店", "memo": "" }, { "name": "セブン‐イレブン うるま塩屋店", "memo": "" }, { "name": "セブン‐イレブン うるま田場店", "memo": "" }, { "name": "セブン‐イレブン うるま喜屋武店", "memo": "" }, { "name": "セブン‐イレブン うるま宮里店", "memo": "" }, { "name": "セブン‐イレブン うるま前原店", "memo": "" }, { "name": "セブン‐イレブン うるま勝連平安名店", "memo": "" }, { "name": "セブン‐イレブン うるま与勝店", "memo": "" }, { "name": "セブン‐イレブン 石川白浜１丁目店", "memo": "" },
+            /* --- 北谷町及其他北部 (11間) --- */
+            { "name": "セブン‐イレブン 北谷北前１丁目店", "memo": "" }, { "name": "セブン‐イレブン 北谷伊平店", "memo": "" }, { "name": "セブン‐イレブン 北谷美浜２丁目店", "memo": "" }, { "name": "セブン‐イレブン 北谷上勢頭店", "memo": "" }, { "name": "セブン‐イレブン 北谷浜川店", "memo": "" }, { "name": "セブン‐イレブン 北谷国体道路上勢頭店", "memo": "" }, { "name": "セブン‐イレブン 北谷美浜３丁目店", "memo": "" }, { "name": "セブン‐イレブン 国頭辺土名店", "memo": "" }, { "name": "セブン‐イレブン 今帰仁平敷店", "memo": "" }, { "name": "セブン‐イレブン 本部大浜店", "memo": "" }, { "name": "セブン‐イレブン 嘉手納水釜店", "memo": "" }
+        ];
 
-        // 深色模式初始化
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+        const defaultShoppingStores = [
+            { id: 'donki_k', name: '唐吉訶德 那霸國際通店', tag: '掃貨', desc: '熱門零食、藥妝' },
+            { id: 'donki_t', name: '唐吉訶德 那霸壺川店', tag: '掃貨', desc: '寬敞好買避開人潮' },
+            { id: 'calbee', name: 'Calbee+ 國際通店', tag: '伴手禮', desc: '限定薯條餅乾' },
+            { id: 'yukisio', name: '雪鹽商店', tag: '伴手禮', desc: '雪塩餅乾、冰淇淋' },
+            { id: 'brown_sugar', name: '國際通手工黑糖拿鐵', tag: '飲品', desc: '逛街解渴' },
+            { id: '711_taxfree', name: '7-11 退稅採購', tag: '注意', desc: '⚠️鮮奶茶須分開含稅結帳' },
+            { id: 'pokemon', name: '寶可夢中心沖繩', tag: '必逛', desc: '來客夢 AEON 內' },
+            { id: 'gacha_mori', name: 'ガチャガチャの森', tag: '扭蛋', desc: '超大型扭蛋森林' },
+            { id: 'otonamo', name: 'オトナモ (Otonamo)', tag: '扭蛋', desc: '大人向高級扭蛋' },
+            { id: 'surugaya', name: '駿河屋 (俊合屋)', tag: '玩具', desc: '二手模型、動漫尋寶' },
+            { id: 'aeon', name: '永旺夢樂城來客夢', tag: '商場', desc: '玩具反斗城、三麗鷗' },
+            { id: 'iias', name: 'iias 沖繩豐崎', tag: '商場', desc: '南部商場、水族館' },
+            { id: 'parco', name: '浦添 PARCO CITY', tag: '商場', desc: 'Hobby Zone' },
+            { id: 'jacks', name: '傑克牛排', tag: '美食', desc: '老字號烤里肌牛排' },
+            { id: 'jojoen', name: '敘敘苑 PARCO CITY店', tag: '美食', desc: '無敵海景和牛燒肉' },
+            { id: 'american', name: '美國村', tag: '景點', desc: '週六 20:00 煙火' },
+            { id: 'taco_rice', name: 'Taco Rice Cafe Kijimuna', tag: '美食', desc: '歐姆蛋塔可飯' },
+            { id: 'el_paso', name: 'EL PASO', tag: '美食', desc: '北谷墨西哥餐廳塔可' },
+            { id: 'airport', name: '那霸機場 國內線', tag: '伴手禮', desc: '二樓甜點代購收尾' }
+        ];
+
+        let appData = { hunterStores: [], shoppingStores: [], checks: {} };
+
+        // ---------------- 2. 雲端讀寫邏輯 ----------------
+        function updateStatus(msg, isSyncing = false) {
+            const el = document.getElementById('sync-status');
+            el.innerText = msg;
+            if(isSyncing) { el.classList.add('status-syncing'); el.classList.remove('status-ok'); }
+            else { el.classList.remove('status-syncing'); el.classList.add('status-ok'); }
         }
-        if (localStorage.getItem('darkMode') === 'true') toggleDarkMode();
 
-        // ---------------- 2. 資料庫與介面渲染 ----------------
-        let hunterStoresRaw = JSON.parse(localStorage.getItem('hunterStores')) || [];
-        let hunterStores = hunterStoresRaw.map(item => typeof item === 'string' ? { name: item, memo: '' } : item);
+        async function loadFromCloud() {
+            if (API_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
+                alert("⚠️ 你還沒替換 API_URL 喔！請把你的 Google Script 網址貼上。");
+                document.getElementById('loading-overlay').style.display = 'none';
+                return;
+            }
 
-        let shoppingStores = JSON.parse(localStorage.getItem('shoppingStores'));
-        if (!shoppingStores) {
-            shoppingStores = [
-                { id: 'donki_k', name: '唐吉訶德 國際通店', tag: '掃貨', desc: '熱門零食、藥妝' },
-                { id: 'calbee', name: 'Calbee+ 國際通店', tag: '伴手禮', desc: '限定薯條餅乾' },
-                { id: 'pokemon', name: '寶可夢中心沖繩', tag: '必逛', desc: '來客夢 AEON 內' },
-                { id: 'jojoen', name: '敘敘苑 PARCO CITY店', tag: '美食', desc: '無敵海景和牛燒肉' }
-            ];
-            localStorage.setItem('shoppingStores', JSON.stringify(shoppingStores));
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (Object.keys(data).length > 0 && (data.hunterStores || data.shoppingStores)) {
+                    appData = data;
+                    // 防呆：如果雲端竟然沒有 hunterStores，就把 111 間預設補進去
+                    if (!appData.hunterStores || appData.hunterStores.length === 0) appData.hunterStores = defaultHunterStores;
+                    if (!appData.shoppingStores || appData.shoppingStores.length === 0) appData.shoppingStores = defaultShoppingStores;
+                } else {
+                    // 第一次連上雲端，把所有的預設資料存進去
+                    appData.hunterStores = defaultHunterStores;
+                    appData.shoppingStores = defaultShoppingStores;
+                    await saveToCloud(); 
+                }
+                
+                if (!appData.checks) appData.checks = {};
+                renderAll();
+                document.getElementById('loading-overlay').style.display = 'none';
+                updateStatus("🟢 已載入最新雲端資料");
+            } catch (error) {
+                alert("連線雲端失敗，請檢查網路狀態。");
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
         }
 
+        async function saveToCloud() {
+            updateStatus("🔄 正在同步至雲端...", true);
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(appData),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                updateStatus("🟢 同步完成 (所有裝置已同步)");
+            } catch (error) {
+                updateStatus("🔴 同步失敗，請檢查網路", false);
+            }
+        }
+
+        // ---------------- 3. UI 渲染 ----------------
         function renderAll() {
-            const hunterContainer = document.getElementById('hunterStoreList');
-            hunterContainer.innerHTML = hunterStores.map((item, index) => 
+            const hList = document.getElementById('hunterStoreList');
+            hList.innerHTML = appData.hunterStores.map((item, index) => 
                 createItemHtml('hunter_'+index, item.name, '獵人包套', item.memo, 'hunter', index)
             ).join('');
 
-            const shoppingContainer = document.getElementById('shoppingStoreList');
-            shoppingContainer.innerHTML = shoppingStores.map((item, index) => 
+            const sList = document.getElementById('shoppingStoreList');
+            sList.innerHTML = appData.shoppingStores.map((item, index) => 
                 createItemHtml(item.id, item.name, item.tag, item.desc, 'shopping', index)
             ).join('');
         }
 
-        // HTML 加上了 draggable 屬性與拖曳事件
         function createItemHtml(id, name, tag, desc, listType, index) {
-            const isChecked = localStorage.getItem(id) === 'true';
+            const isChecked = appData.checks[id] === true;
             const checkedClass = isChecked ? 'checked' : '';
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' 沖繩')}`;
             const descStyleClass = desc ? 'location-desc' : 'location-desc empty';
@@ -279,91 +275,74 @@
             `;
         }
 
-        // ---------------- 3. 拖曳排序邏輯 (Drag & Drop) ----------------
-        let dragSrcIndex = null;
-        let dragListType = null;
-
-        window.dragStart = function(e, index, listType) {
-            dragSrcIndex = index;
-            dragListType = listType;
-            e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => e.target.classList.add('dragging'), 0); // 延遲添加，讓拖曳圖示保持正常
-        };
-
-        window.dragOver = function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        };
-
-        window.drop = function(e, targetIndex, listType) {
-            e.preventDefault();
-            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-            
-            if (dragListType !== listType || dragSrcIndex === targetIndex) return; // 只能在同分類內排序
-
-            let list = listType === 'hunter' ? hunterStores : shoppingStores;
-            const movedItem = list.splice(dragSrcIndex, 1)[0];
-            list.splice(targetIndex, 0, movedItem);
-
-            localStorage.setItem(listType === 'hunter' ? 'hunterStores' : 'shoppingStores', JSON.stringify(list));
-            renderAll();
-        };
-
-        document.addEventListener('dragend', () => {
-             document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-        });
-
-        // ---------------- 4. 功能與事件控制 ----------------
+        // ---------------- 4. 互動操作 (修改資料並呼叫 saveToCloud) ----------------
         window.toggleCheck = function(id, event) {
             if (event && (event.target.tagName === 'BUTTON' || event.target.tagName === 'A')) return;
             const cb = document.getElementById('cb_' + id);
             if (event && event.target.type !== 'checkbox') cb.checked = !cb.checked;
-            localStorage.setItem(id, cb.checked);
+            appData.checks[id] = cb.checked;
             renderAll();
+            saveToCloud(); // 存檔
         };
 
         window.editMemo = function(listType, index, event) {
             event.stopPropagation();
-            let list = listType === 'hunter' ? hunterStores : shoppingStores;
+            let list = listType === 'hunter' ? appData.hunterStores : appData.shoppingStores;
             let currentMemo = listType === 'hunter' ? (list[index].memo || '') : (list[index].desc || '');
             let newMemo = prompt(`輸入「${list[index].name}」的備註：`, currentMemo);
             if (newMemo !== null) {
                 if (listType === 'hunter') list[index].memo = newMemo.trim();
                 else list[index].desc = newMemo.trim();
-                localStorage.setItem(listType === 'hunter' ? 'hunterStores' : 'shoppingStores', JSON.stringify(list));
                 renderAll();
+                saveToCloud(); // 存檔
             }
         };
 
         window.addHunterStore = function() {
             const val = document.getElementById('hunterInput').value.trim();
             if (val) {
-                hunterStores.push({ name: val, memo: '' });
-                localStorage.setItem('hunterStores', JSON.stringify(hunterStores));
+                appData.hunterStores.push({ name: val, memo: '' });
                 document.getElementById('hunterInput').value = '';
                 renderAll();
+                saveToCloud(); // 存檔
             }
         };
 
         window.addShoppingStore = function() {
             const val = document.getElementById('shoppingInput').value.trim();
             if (val) {
-                shoppingStores.push({ id: 'shop_' + Date.now(), name: val, tag: '自訂', desc: '' });
-                localStorage.setItem('shoppingStores', JSON.stringify(shoppingStores));
+                appData.shoppingStores.push({ id: 'shop_' + Date.now(), name: val, tag: '自訂', desc: '' });
                 document.getElementById('shoppingInput').value = '';
                 renderAll();
+                saveToCloud(); // 存檔
             }
         };
 
         window.deleteItem = function(listType, index, event) {
             event.stopPropagation();
-            let list = listType === 'hunter' ? hunterStores : shoppingStores;
+            let list = listType === 'hunter' ? appData.hunterStores : appData.shoppingStores;
             const id = listType === 'hunter' ? 'hunter_'+index : list[index].id;
-            localStorage.removeItem(id);
+            delete appData.checks[id]; 
             list.splice(index, 1);
-            localStorage.setItem(listType === 'hunter' ? 'hunterStores' : 'shoppingStores', JSON.stringify(list));
             renderAll();
+            saveToCloud(); // 存檔
         };
+
+        // ---------------- 5. 拖曳與介面功能 ----------------
+        let dragSrcIndex = null, dragListType = null;
+        window.dragStart = function(e, index, listType) { dragSrcIndex = index; dragListType = listType; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => e.target.classList.add('dragging'), 0); };
+        window.dragOver = function(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
+        window.drop = function(e, targetIndex, listType) {
+            e.preventDefault();
+            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            if (dragListType !== listType || dragSrcIndex === targetIndex) return; 
+            let list = listType === 'hunter' ? appData.hunterStores : appData.shoppingStores;
+            const movedItem = list.splice(dragSrcIndex, 1)[0];
+            list.splice(targetIndex, 0, movedItem);
+            renderAll();
+            saveToCloud(); // 拖曳完存檔
+        };
+        document.addEventListener('dragend', () => document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging')));
 
         window.toggleCategory = function(id) {
             const content = document.getElementById('content_' + id);
@@ -382,22 +361,56 @@
         };
 
         window.generateRoute = function() {
-            const unchecked = Array.from(document.querySelectorAll('.location-item:not(.checked)'))
-                                   .map(el => el.getAttribute('data-name'))
-                                   .filter(n => n && !n.includes('退稅'))
-                                   .map(n => encodeURIComponent(n + ' 沖繩'));
+            const unchecked = Array.from(document.querySelectorAll('.location-item:not(.checked)')).map(el => el.getAttribute('data-name')).filter(n => n && !n.includes('退稅')).map(n => encodeURIComponent(n + ' 沖繩'));
             if (unchecked.length === 0) return alert('太棒了！所有任務已完成！');
             if (unchecked.length > 9) { alert('未完成地點較多，為您導航前 9 個。'); unchecked.splice(9); }
             window.open(`https://www.google.com/maps/dir/${unchecked.join('/')}`, '_blank');
         };
 
-        // 載入執行
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+        }
+
+        // ---------------- 6. 匯出 Google地圖 CSV ----------------
+        window.exportToCSV = function() {
+            let csvContent = "\uFEFF"; // 解決中文亂碼
+            csvContent += "地點名稱,搜尋關鍵字,分類,備註\n";
+            
+            appData.hunterStores.forEach(item => {
+                csvContent += `"${item.name}","沖縄 ${item.name}","🎯獵人包套","${item.memo}"\n`;
+            });
+            
+            appData.shoppingStores.forEach(item => {
+                csvContent += `"${item.name}","沖縄 ${item.name}","🛍️${item.tag}","${item.desc}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "沖繩打卡地圖.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("✅ 地圖檔 (CSV) 已下載！請前往「Google 我的地圖 (My Maps)」匯入。");
+        };
+
+        // ---------------- 啟動程式 ----------------
         document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
+            if (localStorage.getItem('darkMode') === 'true') toggleDarkMode();
             ['hunter', 'shopping', 'map'].forEach(id => {
                 if (localStorage.getItem('toggle_' + id) === 'closed') toggleCategory(id);
             });
+            loadFromCloud(); // 讀取雲端資料
         });
+        
+        // PWA Icon
+        const blob = new Blob([JSON.stringify({name:"沖繩打卡",display:"standalone",background_color:"#f4f7f6",theme_color:"#2c3e50",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E📍%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"}]})], { type: 'application/manifest+json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(blob);
     </script>
 </body>
 </html>
